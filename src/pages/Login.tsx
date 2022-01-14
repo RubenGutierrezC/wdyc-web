@@ -1,42 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-location";
-import useSocket from "../hooks/useSocket";
-import useLoading from "../hooks/useLoading";
-import useStore from "../store/index";
+
+import useLogin from "../hooks/pages/useLogin";
 
 const Login = () => {
-  const navigate = useNavigate();
-
-  const { socket } = useSocket();
-  const login = useStore((state) => state.login);
-  const { isLoading, startLoading, stopLoading } = useLoading();
-
   const [username, setUsername] = useState("");
   const [roomCode, setRoomCode] = useState("");
 
-  const handleCreateRoom = () => {
-    const data = { username };
-
-    startLoading();
-    socket?.emit("create-room", data, (resp: any) => {
-      console.log(resp);
-      login(username, resp.roomCode);
-      navigate({ to: "/room" });
-      stopLoading();
-    });
-  };
-
-  const handleJoinRoom = () => {
-    const data = { code: roomCode, username };
-
-    startLoading();
-    socket?.emit("join-room", data, (resp: any) => {
-      console.log(resp);
-      login(username, roomCode);
-      navigate({ to: "/room" });
-      stopLoading();
-    });
-  };
+  const { handleJoinRoom, handleCreateRoom, isLoading } = useLogin();
 
   return (
     <div className="grid place-content-center mt-24">
@@ -90,10 +60,10 @@ const Login = () => {
 
             <div>
               <button
-                onClick={handleCreateRoom}
+                onClick={() => handleCreateRoom({ username })}
                 disabled={!username || isLoading}
                 type="submit"
-                className="                 
+                className="
                   flex
                   mt-2
                   items-center
@@ -150,10 +120,10 @@ const Login = () => {
                 </div>
               </div>
               <button
-                onClick={handleJoinRoom}
+                onClick={() => handleJoinRoom({ roomCode, username })}
                 disabled={!roomCode || !username || isLoading}
                 type="submit"
-                className="                 
+                className="
                   flex
                   mt-2
                   items-center

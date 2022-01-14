@@ -1,6 +1,7 @@
 import useStore from "../store";
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
+import { Icon } from "@iconify/react";
 
 const mockUsers = [
   {
@@ -113,22 +114,19 @@ const Room = () => {
           </div>
         ))}
         <div className="flex flex-col">
-          <div className="relative inline-block">
+          <div className="relative inline-block rounded-full overflow-hidden">
             <img
-              className="inline-block object-cover w-12 h-12 rounded-full 
-              after:bg-gray-200 
-              after:left-0
-              after:top-0 
-              after:right-0 after:bottom-0
-              after:w-full after:h-full
-              after:pseudo-element
-            "
+              className="object-cover w-12 h-12  relative"
               src="https://www.elarraydejota.com/wp-content/uploads/2016/09/Linux-Avatar-300px.png"
               alt="Profile image"
             />
-            {/* <span className="absolute top-0 right-0 inline-block text-sm font-bold bg-white border-2 border-white rounded-full">
-              10
-            </span> */}
+            <div className="bg-black bg-opacity-50 h-full w-full absolute top-0" />
+            <Icon
+              icon="mdi:reload"
+              fontSize={30}
+              className="z-20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              color="#fff"
+            />
           </div>
 
           <p className="text-sm text-white">juez</p>

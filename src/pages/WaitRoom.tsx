@@ -1,3 +1,6 @@
+import useSocket from "../hooks/useSocket";
+import { useEffect, useState } from "react";
+import useSocketContext from "../hooks/useSocketContext";
 const mockParticipants = [
   { id: 1, username: "juan" },
   { id: 2, username: "juan" },
@@ -5,8 +8,14 @@ const mockParticipants = [
 ];
 
 const WaitRoom = () => {
+  const { socket } = useSocketContext();
+  const [participants, setParticipant] = useState<string[]>([]);
+
   const handleInitGame = () => {
     // socket login
+    socket?.emit("create-room", { username: "111" }, (resp) => {
+      console.log("ssss");
+    });
     console.log("init game");
   };
 
@@ -14,6 +23,13 @@ const WaitRoom = () => {
     // socket login
     console.log("logout");
   };
+
+  useEffect(() => {
+    socket?.on("participant-joined", (resp: any) => {
+      console.log("participant-joined", resp);
+      setParticipant([...participants, resp.username]);
+    });
+  }, [socket, participants]);
 
   return (
     <div className="grid place-content-center mt-24">
@@ -40,9 +56,9 @@ const WaitRoom = () => {
           <hr />
           <p>participantes: </p>
           <ul>
-            {mockParticipants.map((part) => (
-              <li className="my-3" key={part.id}>
-                {part.username}
+            {participants.map((part) => (
+              <li className="my-3" key={part}>
+                {part}
               </li>
             ))}
           </ul>

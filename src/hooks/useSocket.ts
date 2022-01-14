@@ -1,28 +1,27 @@
-import { useEffect, useState } from "react";
-import { Socket, io } from "socket.io-client";
+import { useEffect, useMemo, useState } from "react";
+import { io } from "socket.io-client";
 
 const SOCKET_URL = "http://localhost:5000";
 
 const useSocket = () => {
-  const [socket, setSocket] = useState<Socket | null>(() => io(SOCKET_URL));
+  const socket = useMemo(() => io(SOCKET_URL), [SOCKET_URL]);
   const [isOnline, setIsOnline] = useState(false);
 
   useEffect(() => {
-    if (socket) {
-      socket.on("connect", () => setIsOnline(true));
-      socket.on("offline", () => setIsOnline(false));
-      socket.on("disconnect", () => setIsOnline(false));
-    }
+    setIsOnline(socket.connected);
+  }, [socket]);
 
-    return () => {
-      socket?.close();
-    };
+  useEffect(() => {
+    socket.on("connect", () => setIsOnline(true));
+  }, [socket]);
+
+  useEffect(() => {
+    socket.on("disconnect", () => setIsOnline(false));
   }, [socket]);
 
   return {
     socket,
     isOnline,
-    setSocket,
   };
 };
 
