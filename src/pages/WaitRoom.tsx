@@ -1,6 +1,7 @@
 import useSocket from "../hooks/useSocket";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useSocketContext from "../hooks/useSocketContext";
+import useStore from "../store";
 const mockParticipants = [
   { id: 1, username: "juan" },
   { id: 2, username: "juan" },
@@ -9,6 +10,7 @@ const mockParticipants = [
 
 const WaitRoom = () => {
   const { socket } = useSocketContext();
+  const user = useStore((state) => state.user);
   const [participants, setParticipant] = useState<string[]>([]);
 
   const handleInitGame = () => {
@@ -27,9 +29,34 @@ const WaitRoom = () => {
   useEffect(() => {
     socket?.on("participant-joined", (resp: any) => {
       console.log("participant-joined", resp);
-      setParticipant([...participants, resp.username]);
+      addParticipant([resp.username]);
     });
-  }, [socket, participants]);
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.emit(
+      "get-participants-in-room",
+      {
+        code: user.roomCode,
+        username: user.username,
+      },
+      (resp: any) => {
+        console.log("get-participants-in-room", resp.data);
+        if (resp.data?.participants) {
+          const news = resp.data.participants.map((p) => p.username);
+          console.log(news);
+          addParticipant(news);
+        }
+      }
+    );
+  }, [socket]);
+
+  const addParticipant = useCallback(
+    (pats) => {
+      setParticipant((prev) => [...prev, ...pats]);
+    },
+    [participants]
+  );
 
   return (
     <div className="grid place-content-center mt-24">
