@@ -15,9 +15,13 @@ const WaitRoom = () => {
 
   const handleInitGame = () => {
     // socket login
-    socket?.emit("create-room", { username: "111" }, (resp) => {
-      console.log("ssss");
-    });
+    socket?.emit(
+      "start-game",
+      { code: user.roomCode, username: user.username },
+      (resp) => {
+        console.log("ssss");
+      }
+    );
     console.log("init game");
   };
 
