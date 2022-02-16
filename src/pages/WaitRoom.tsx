@@ -1,27 +1,20 @@
-import useSocket from "../hooks/useSocket";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-location";
 import useSocketContext from "../hooks/useSocketContext";
 import useStore from "../store";
-const mockParticipants = [
-  { id: 1, username: "juan" },
-  { id: 2, username: "juan" },
-  { id: 3, username: "juan" },
-];
 
 const WaitRoom = () => {
+  const navigate = useNavigate();
+
   const { socket } = useSocketContext();
   const user = useStore((state) => state.user);
   const [participants, setParticipant] = useState<string[]>([]);
 
   const handleInitGame = () => {
     // socket login
-    socket?.emit(
-      "start-game",
-      { code: user.roomCode, username: user.username },
-      (resp) => {
-        console.log("ssss");
-      }
-    );
+    socket?.emit("start-game", user, (resp) => {
+      navigate({ to: "/room" });
+    });
     console.log("init game");
   };
 
@@ -61,6 +54,12 @@ const WaitRoom = () => {
     },
     [participants]
   );
+
+  useEffect(() => {
+    socket?.on("start-game", (resp: any) => {
+      navigate({ to: "/room" });
+    });
+  }, [socket]);
 
   return (
     <div className="grid place-content-center mt-24">

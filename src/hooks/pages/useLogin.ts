@@ -40,7 +40,7 @@ const useLogin = () => {
   };
 
   const handleJoinRoom = ({ roomCode = "", username = "" }) => {
-    const data = { code: roomCode, username };
+    const data = { roomCode, username };
 
     if (socket) {
       startLoading();

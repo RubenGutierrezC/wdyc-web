@@ -13,6 +13,8 @@ const useStore = create<Store>(
     user: {
       username: "",
       roomCode: "",
+      cards: [],
+      meme: "",
     },
     login: (username, roomCode) => {
       set((state) => {
