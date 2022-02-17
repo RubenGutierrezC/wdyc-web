@@ -1,8 +1,9 @@
 import useStore from "../store";
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import useSocketContext from "../hooks/useSocketContext";
+import { toast } from "react-toastify";
 
 const mockResponse = {
   participantCards: {
@@ -93,18 +94,47 @@ const Room = () => {
     },
   });
 
+  const [dragZoneposition, setDragZoneposition] = useState({
+    bottom: 0,
+    height: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+    width: 0,
+    x: 0,
+    y: 0,
+  });
+
   useEffect(() => {
     socket?.emit("get-room-info", user, (resp: any) => {
       console.log("get-room-info", resp.data);
-      setRound(resp.data);
+      // setRound(resp.data);
     });
   }, [socket]);
 
-  console.log("draggin", isDragging, "hover", isOnDragZone);
+  useEffect(() => {
+    setRound(mockResponse);
+  }, []);
 
   const handleOnHoveDragZone = () => {
     setIsOnDragZone(isDragging);
   };
+
+  const dragZoneRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    setDragZoneposition(dragZoneRef.current?.getBoundingClientRect());
+  }, [dragZoneRef]);
+
+  const verifyIfItemIsInDragZone = ({ x, y }: { x: number; y: number }) => {
+    const { left, top, x: h, y: w } = dragZoneposition;
+
+    // console.log(`${left} < ${x} < ${left + w},,,, ${top} < ${y} < ${top + h}`);
+
+    setIsOnDragZone(x > left && x < left + w && y > top && y < top + h);
+  };
+
+  const toastId = useRef<any>(null);
 
   return (
     <div className="grid place-content-center mt-24">
@@ -112,6 +142,7 @@ const Room = () => {
         Numero de rounds: {round?.gameConfig?.numberOfRounds}
       </p>
       <p className="text-white">Ronda: {round?.gameConfig?.actualRound}</p>
+
       <div className="flex gap-5 mb-10">
         <div className="flex flex-col items-center justify-center bg-gray-100">
           <div
@@ -124,7 +155,7 @@ const Room = () => {
           lg:px-10
           py-8
           rounded-3xl
-          w-50
+          min-w-[300px]
           max-w-md
         "
           >
@@ -133,35 +164,71 @@ const Room = () => {
         </div>
         <motion.div
           // ref={constraintsRef}
-          onMouseEnter={handleOnHoveDragZone}
-          className="h-full border-dotted w-48 border-2 flex justify-center items-center"
+
+          ref={dragZoneRef}
+          className="h-full border-dotted w-56 border-2 flex justify-center items-center"
         >
           drag zone
         </motion.div>
       </div>
+
+      {/* TODO: move to separate component */}
       <h4 className="text-white text-center">cards</h4>
-      <div className="flex gap-2 max-w-lg">
+      <div className="flex gap-2">
         {round.participantCards?.cards?.map((el) => (
           <motion.div
             key={el._id}
             drag
             animate={{
-              translateY: el === selectedCard ? 200 : 0,
-              scale: el === selectedCard ? 3 : 1,
+              translateY: el === selectedCard ? 100 : 0,
+              scale: el === selectedCard ? 2 : 1,
             }}
             whileDrag={{
-              scale: 2,
+              scale: 0.85,
             }}
             dragSnapToOrigin
             onDragStart={() => setIsDragging(true)}
             onDragEnd={(evt, info) => {
               if (isOnDragZone) {
                 setSelectedCard(el);
+
+                if (!toastId.current) {
+                  toast.dismiss(toastId.current);
+                }
+
+                toastId.current = toast(
+                  <div className="flex flex-col gap-2">
+                    <h5>Seguro que deseas jugar esa carta?</h5>
+                    <div className="flex">
+                      <button
+                        className="hover:bg-purple-300 px-2 py-2 rounded-full"
+                        onClick={() => setSelectedCard(null)}
+                      >
+                        cancel
+                      </button>
+                      <button
+                        className="bg-purple-500 hover:bg-purple-300 text-white px-2 py-2 rounded-full"
+                        onClick={() => console.log("confirm", selectedCard)}
+                      >
+                        confirm
+                      </button>
+                    </div>
+                  </div>,
+                  {
+                    autoClose: false,
+                    closeButton: false,
+                    position: "bottom-center",
+                    toastId: "drag-card",
+                  }
+                );
               }
               setIsOnDragZone(false);
               setIsDragging(false);
             }}
-            className="w-40 h-40 bg-white rounded-lg shadow-md px-2"
+            onDrag={(_, { point }) => {
+              verifyIfItemIsInDragZone(point);
+            }}
+            className="min-w-[100px] h-40 bg-white rounded-lg shadow-md px-2"
           >
             <span>{el?.phrase}</span>
           </motion.div>
