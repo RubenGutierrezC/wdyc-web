@@ -136,6 +136,44 @@ const Room = () => {
 
   const toastId = useRef<any>(null);
 
+  const setCard = (card: any) => {
+    socket?.emit(
+      "set-card",
+      {
+        roomCode: user.roomCode,
+        username: user.username,
+        card,
+      },
+      (resp) => {
+        console.log("set-card", resp);
+        setSelectedCard(null);
+        setRound((prevState) => ({
+          ...prevState,
+          participantCards: {
+            ...prevState.participantCards,
+            cards: prevState.participantCards.cards.filter(
+              (c: any) => c._id !== card._id
+            ),
+          },
+        }));
+      }
+    );
+  };
+
+  useEffect(() => {
+    socket?.on("participant-set-card", (resp: any) => {
+      console.log("participant-set-card", resp);
+      // setRound(resp.data);
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.on("select-card", (resp: any) => {
+      console.log("select-card", resp);
+      // setRound(resp.data);
+    });
+  }, [socket]);
+
   return (
     <div className="grid place-content-center mt-24">
       <p className="text-white">
@@ -208,7 +246,7 @@ const Room = () => {
                       </button>
                       <button
                         className="bg-purple-500 hover:bg-purple-300 text-white px-2 py-2 rounded-full"
-                        onClick={() => console.log("confirm", selectedCard)}
+                        onClick={() => setCard(el)}
                       >
                         confirm
                       </button>
