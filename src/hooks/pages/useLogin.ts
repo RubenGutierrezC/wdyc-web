@@ -16,47 +16,44 @@ const useLogin = () => {
   const { isLoading, startLoading, stopLoading } = useLoading();
 
   const handleCreateRoom = ({ username = " " }) => {
+    if (!socket) {
+      return showErrorToast("connection problem");
+    }
+
     const data = { username };
 
-    if (socket) {
-      startLoading();
-      socket.emit("create-room", data, (resp: CreateRoomResponse) => {
-        // TODO: standarize catch response error
-        if (resp.error) {
-          return showErrorToast(resp.message);
-        }
+    startLoading();
+    socket.emit("create-room", data, (resp: CreateRoomResponse) => {
+      // TODO: standarize catch response error
+      if (resp.error) {
+        return showErrorToast(resp.message);
+      }
 
-        if (resp.data) {
-          login(username, resp.data.roomCode);
-          navigate({ to: "/wait" });
-        }
+      if (resp.data) {
+        login(username, resp.data.roomCode);
+        navigate({ to: "/wait" });
+      }
 
-        stopLoading();
-      });
-    } else {
-      // TODO: estandarize no connect message
-      showErrorToast("connection problem");
-    }
+      stopLoading();
+    });
   };
 
   const handleJoinRoom = ({ roomCode = "", username = "" }) => {
+    if (!socket) {
+      return showErrorToast("connection problem");
+    }
+
     const data = { roomCode, username };
 
-    if (socket) {
-      startLoading();
-      socket?.emit("join-room", data, (resp: any) => {
-        if (resp.error) {
-          return showErrorToast(resp.message);
-        }
-        console.log(resp);
-        login(username, roomCode);
-        navigate({ to: "/wait" });
-        stopLoading();
-      });
-    } else {
-      // TODO: estandarize no connect message
-      showErrorToast("connection problem");
-    }
+    startLoading();
+    socket?.emit("join-room", data, (resp: any) => {
+      if (resp.error) {
+        return showErrorToast(resp.message);
+      }
+      login(username, roomCode);
+      navigate({ to: "/wait" });
+      stopLoading();
+    });
   };
 
   return {

@@ -1,20 +1,12 @@
-// import { useSnackbar } from "notistack";
-// import handleErrorMessage from "../utils/handleErrorMessage";
+import { toast } from "react-toastify";
 
 export default function useToast() {
-  // const { enqueueSnackbar } = useSnackbar();
-
   const showSuccessToast = (title: string = "") => {
-    // enqueueSnackbar(title, {
-    //   variant: "success",
-    // });
+    toast.success(title);
   };
 
   const showErrorToast = (error: any = "") => {
-    console.log("error", error);
-    // enqueueSnackbar(handleErrorMessage(error), {
-    //   variant: "error",
-    // });
+    toast.error(error);
   };
 
   return {

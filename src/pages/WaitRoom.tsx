@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-location";
+import useLoading from "../hooks/useLoading";
 import useSocketContext from "../hooks/useSocketContext";
+import useToast from "../hooks/useToast";
 import useStore from "../store";
 
 const WaitRoom = () => {
   const navigate = useNavigate();
+  const { showErrorToast } = useToast();
+
+  const { isLoading, startLoading, stopLoading } = useLoading();
 
   const { socket } = useSocketContext();
   const user = useStore((state) => state.user);
@@ -12,10 +17,19 @@ const WaitRoom = () => {
 
   const handleInitGame = () => {
     // socket login
-    socket?.emit("start-game", user, (resp) => {
+    if (!socket) {
+      return showErrorToast("connection problem");
+    }
+
+    startLoading();
+    socket?.emit("start-game", user, (resp: any) => {
+      stopLoading();
+      if (resp.error) {
+        return showErrorToast(resp.message);
+      }
+
       navigate({ to: "/room" });
     });
-    console.log("init game");
   };
 
   const handleLogout = () => {
@@ -25,7 +39,6 @@ const WaitRoom = () => {
 
   useEffect(() => {
     socket?.on("participant-joined", (resp: any) => {
-      console.log("participant-joined", resp);
       addParticipant([resp.username]);
     });
   }, [socket]);
@@ -41,11 +54,16 @@ const WaitRoom = () => {
         console.log("get-participants-in-room", resp.data);
         if (resp.data?.participants) {
           const news = resp.data.participants.map((p) => p.username);
-          console.log(news);
           addParticipant(news);
         }
       }
     );
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.on("start-game", (resp: any) => {
+      navigate({ to: "/room" });
+    });
   }, [socket]);
 
   const addParticipant = useCallback(
@@ -54,12 +72,6 @@ const WaitRoom = () => {
     },
     [participants]
   );
-
-  useEffect(() => {
-    socket?.on("start-game", (resp: any) => {
-      navigate({ to: "/room" });
-    });
-  }, [socket]);
 
   return (
     <div className="grid place-content-center mt-24">
@@ -95,6 +107,7 @@ const WaitRoom = () => {
 
           <div className="flex flex-col">
             <button
+              disabled={isLoading}
               onClick={handleInitGame}
               className="                  flex
                   mt-2
@@ -116,6 +129,7 @@ const WaitRoom = () => {
               Iniciar
             </button>
             <button
+              disabled={isLoading}
               onClick={handleLogout}
               className="                  flex
                   mt-2

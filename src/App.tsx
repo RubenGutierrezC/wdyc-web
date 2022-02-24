@@ -1,6 +1,8 @@
 import Routes from "./Routes";
 import useSocketContext from "./hooks/useSocketContext";
 import useStore from "./store";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
   const { isOnline, socket } = useSocketContext();
@@ -22,7 +24,7 @@ const App = () => {
         <p>user: {user.username}</p>
         <p>room code: {user.roomCode}</p>
       </header>
-
+      <ToastContainer />
       <Routes />
     </>
   );
