@@ -12,7 +12,7 @@ const Room = () => {
   const user = useStore((store) => store.user);
   const { socket } = useSocketContext();
 
-  const { showErrorToast } = useToast();
+  const { showErrorToast, showSuccessToast } = useToast();
 
   // const [isDragging, setIsDragging] = useState(false);
   const [isOnDragZone, setIsOnDragZone] = useState(false);
@@ -124,20 +124,33 @@ const Room = () => {
 
   useEffect(() => {
     socket?.on("participant-set-card", (resp: any) => {
-      console.log("participant-set-card", resp);
-      // setRound(resp.data);
+      showSuccessToast(`${resp} set a card`);
     });
   }, [socket]);
 
   useEffect(() => {
     // socket called when all players (except de judge) set a card
     socket?.on("select-card", (resp: any) => {
-      console.log("select-card", resp);
+      showSuccessToast(` now, judge will select the winner card`);
       if (isJudge) {
         setCardsToSelect(resp);
       }
     });
   }, [socket, isJudge]);
+
+  useEffect(() => {
+    // socket called when judge select the winner card
+    socket?.on("winner-card", (resp: any) => {
+      showSuccessToast(`winner card: ${resp?.phrase}`);
+    });
+  }, [socket, isJudge]);
+
+  useEffect(() => {
+    // socket called when judge select the winner card
+    socket?.on("next-round", (resp: any) => {
+      showSuccessToast(`starting next round..`);
+    });
+  }, [socket]);
 
   return (
     <div className="grid place-content-center mt-24">
