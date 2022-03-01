@@ -7,10 +7,16 @@ import { Players } from "../components/Players";
 import useToast from "../hooks/useToast";
 import { RoomGameInfo } from "../components/RoomGameInfo";
 import { Cards } from "../components/Cards";
+import { Dialog } from "@headlessui/react";
 
 const Room = () => {
   const user = useStore((store) => store.user);
   const { socket } = useSocketContext();
+
+  const [endInfo, setEndInfo] = useState({
+    isEnd: false,
+    winner: "",
+  });
 
   const { showErrorToast, showSuccessToast } = useToast();
 
@@ -76,21 +82,13 @@ const Room = () => {
           card,
         },
         (resp) => {
-          console.log("set-card", resp);
+          console.log("set-win-card", resp);
           if (resp.error) {
             return showErrorToast(resp.message);
           }
 
           setSelectedCard(null);
-          setRound((prevState) => ({
-            ...prevState,
-            participantCards: {
-              ...prevState.participantCards,
-              cards: prevState.participantCards.cards.filter(
-                (c: any) => c._id !== card._id
-              ),
-            },
-          }));
+          setCardsToSelect([]);
         }
       );
     } else {
@@ -148,12 +146,56 @@ const Room = () => {
   useEffect(() => {
     // socket called when judge select the winner card
     socket?.on("next-round", (resp: any) => {
+      console.log("next-round", resp);
+
+      setRound((prevState) => ({
+        ...prevState,
+        judge: resp.judge,
+        gameConfig: resp.gameConfig,
+      }));
+
       showSuccessToast(`starting next round..`);
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.on("end-game", (resp: any) => {
+      showSuccessToast(`End game, winner: ${resp.winner}`);
+      setEndInfo({
+        isEnd: true,
+        winner: resp.winner,
+      });
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.on("new-card", (resp: any) => {
+      showSuccessToast(`New card`);
+      console.log("new  card", resp);
+      if (resp) {
+        setRound((prevState) => ({
+          ...prevState,
+          participantCards: {
+            cards: [...prevState.participantCards.cards, resp],
+          },
+        }));
+      }
     });
   }, [socket]);
 
   return (
     <div className="grid place-content-center mt-24">
+      <Dialog
+        open={endInfo.isEnd}
+        onClose={() => null}
+        className="fixed z-10 inset-0 overflow-y-auto flex flex-col justify-center items-center"
+      >
+        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+        <Dialog.Description className="p-5 bg-white z-50 rounded-lg">
+          <h1>Winner: {endInfo.winner}</h1>
+        </Dialog.Description>
+      </Dialog>
+
       <RoomGameInfo gameConfig={round.gameConfig} />
 
       <div className="flex gap-5 mb-10">
