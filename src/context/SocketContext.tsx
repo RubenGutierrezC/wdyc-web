@@ -4,13 +4,13 @@ import useSocket from "../hooks/useSocket";
 
 interface ISocketContext {
   socket: Socket | null;
-  isOnline: boolean;
+  socketIsOnline: boolean;
 }
 
 export const SocketContext = createContext({} as ISocketContext);
 
 export const SocketProvider: FC = ({ children }) => {
-  const { socket, isOnline } = useSocket();
+  const { socket, socketIsOnline } = useSocket();
 
   console.log("render provider");
 
@@ -18,7 +18,7 @@ export const SocketProvider: FC = ({ children }) => {
     <SocketContext.Provider
       value={{
         socket,
-        isOnline,
+        socketIsOnline,
       }}
     >
       {children}

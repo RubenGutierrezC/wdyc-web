@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
 const App = () => {
-  const { isOnline, socket } = useSocketContext();
+  const { socketIsOnline, socket } = useSocketContext();
 
   const user = useStore((state) => state.user);
 
@@ -15,8 +15,8 @@ const App = () => {
         <p>
           {" "}
           your online status:{" "}
-          <span className={isOnline ? "text-green-600" : "text-red-600"}>
-            {isOnline ? "online" : "offline"}
+          <span className={socketIsOnline ? "text-green-600" : "text-red-600"}>
+            {socketIsOnline ? "online" : "offline"}
           </span>
         </p>
 
