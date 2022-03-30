@@ -4,8 +4,9 @@ interface Store {
   user: {
     username: string;
     roomCode: string;
+    redirectTo: string;
   };
-  login: (username: string, roomCode: string) => void;
+  login: (username: string, roomCode: string, redirectTo?: string) => void;
 }
 
 const useStore = create<Store>(
@@ -13,10 +14,9 @@ const useStore = create<Store>(
     user: {
       username: "",
       roomCode: "",
-      cards: [],
-      meme: "",
+      redirectTo: "",
     },
-    login: (username, roomCode) => {
+    login: (username, roomCode, redirectTo = "") => {
       set((state) => {
         window.localStorage.setItem(
           "user",
@@ -27,6 +27,7 @@ const useStore = create<Store>(
           user: {
             username,
             roomCode,
+            redirectTo,
           },
         };
       });

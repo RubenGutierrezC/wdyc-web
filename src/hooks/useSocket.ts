@@ -29,7 +29,11 @@ const useSocket = () => {
               return window.localStorage.removeItem("user");
             }
 
-            login(parsedUser.username, parsedUser.roomCode);
+            login(
+              parsedUser.username,
+              parsedUser.roomCode,
+              resp.data.judge ? "/room" : "/wait"
+            );
           });
         }
       }

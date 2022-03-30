@@ -12,8 +12,6 @@ export const SocketContext = createContext({} as ISocketContext);
 export const SocketProvider: FC = ({ children }) => {
   const { socket, socketIsOnline } = useSocket();
 
-  console.log("render provider");
-
   return (
     <SocketContext.Provider
       value={{

@@ -11,7 +11,7 @@ const WaitRoom = () => {
 
   const { isLoading, startLoading, stopLoading } = useLoading();
 
-  const { socket } = useSocketContext();
+  const { socket, socketIsOnline } = useSocketContext();
   const user = useStore((state) => state.user);
   const [participants, setParticipant] = useState<string[]>([]);
 
@@ -38,33 +38,44 @@ const WaitRoom = () => {
   };
 
   useEffect(() => {
-    socket?.on("participant-joined", (resp: any) => {
-      addParticipant([resp.username]);
-    });
-  }, [socket]);
+    if (socketIsOnline) {
+      socket?.on("participant-joined", (resp: any) => {
+        addParticipant([resp.username]);
+      });
+    }
+
+    return () => socket?.off("participant-joined");
+  }, [socket, socketIsOnline]);
 
   useEffect(() => {
-    socket?.emit(
-      "get-participants-in-room",
-      {
-        code: user.roomCode,
-        username: user.username,
-      },
-      (resp: any) => {
-        console.log("get-participants-in-room", resp.data);
-        if (resp.data?.participants) {
-          const news = resp.data.participants.map((p) => p.username);
-          addParticipant(news);
+    if (socketIsOnline && user.roomCode) {
+      console.log(socketIsOnline, user);
+
+      socket?.emit(
+        "get-participants-in-room",
+        {
+          code: user.roomCode,
+          username: user.username,
+        },
+        (resp: any) => {
+          console.log("get-participants-in-room", resp.data);
+          if (resp.data?.participants) {
+            const news = resp.data.participants.map((p) => p.username);
+            addParticipant(news);
+          }
         }
-      }
-    );
-  }, [socket]);
+      );
+    }
+  }, [socket, socketIsOnline, user]);
 
   useEffect(() => {
-    socket?.on("start-game", (resp: any) => {
-      navigate({ to: "/room" });
-    });
-  }, [socket]);
+    if (socketIsOnline) {
+      socket?.on("start-game", (resp: any) => {
+        navigate({ to: "/room" });
+      });
+    }
+    return () => socket?.off("start-game");
+  }, [socket, socketIsOnline]);
 
   const addParticipant = useCallback(
     (pats) => {
